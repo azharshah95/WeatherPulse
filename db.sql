@@ -1,14 +1,4 @@
-coord/lon
-coord/lat
-base
-main/temp
-main/feels_like
-dt
-sys/country
-timezone
-name
-
-CREATE TABLE "tbldata" (
+CREATE TABLE IF NOT EXISTS "tbldata"  (
   "id" serial NOT NULL,
   PRIMARY KEY ("id"),
   "city_id" integer NOT NULL,
@@ -21,10 +11,3 @@ CREATE TABLE "tbldata" (
   "timezone" integer NOT NULL,
   "date" timestamp NOT NULL
 )
-
-docker-compose -f stack.yml up
-docker-compose -f stack.yml down
-
-docker volume ls
-docker volmue inspect [VOLUME_NAME]
-docker volume prune -f -a (removes all volumes by force)
