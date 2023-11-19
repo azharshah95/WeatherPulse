@@ -90,4 +90,4 @@ print(parsedData)
 insertData(parsedData)
 
 def hello():
-    print('Hello!')
+    print('Hello from etl file!')

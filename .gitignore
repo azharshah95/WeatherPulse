@@ -2,3 +2,4 @@ config.ini
 .env
 # cols.txt
 logs
+__pycache__
