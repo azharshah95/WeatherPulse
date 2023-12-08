@@ -46,8 +46,6 @@ def parsingRawData(rawData: dict) -> dict[dict]:
   }
   return myDict
 
-
-
 def insertData(parsedData: dict):
   conn = dbConnect()
   try:
@@ -81,10 +79,12 @@ def insertData(parsedData: dict):
           conn.close()
           print("PostgreSQL connection is closed")
 
-rawData = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}&units={UNITS}").json()
-print(json.dumps(rawData))        
+def fetchData():
+  rawData = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}&units={UNITS}").json()
+  print(json.dumps(rawData))
+  return rawData  
 
-parsedData = parsingRawData(rawData)
+parsedData = parsingRawData(fetchData())
 print(parsedData)
 
 insertData(parsedData)
