@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "tbldata"  (
+CREATE TABLE IF NOT EXISTS "tblweatherdata"  (
   "id" serial NOT NULL,
   PRIMARY KEY ("id"),
   "city_id" integer NOT NULL,
