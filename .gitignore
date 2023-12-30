@@ -3,3 +3,4 @@ config.ini
 # cols.txt
 logs
 __pycache__
+snowflakeQueries
