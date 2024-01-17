@@ -3,4 +3,5 @@ config.ini
 # cols.txt
 logs
 __pycache__
-snowflakeQueries
+snowflakeQueries/tblweather*
+snowflakeQueries/tutorial.sql
