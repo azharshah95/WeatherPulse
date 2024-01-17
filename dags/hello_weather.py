@@ -90,7 +90,7 @@ def insertData(ti):
 
 with DAG('hello_weather',
          description='Hello World DAG',
-         schedule='0 12 * * *',
+         schedule='*/10 * * * *',
          start_date=datetime.datetime(2017, 3, 20),
          catchup=False):
 
