@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS "tblweatherdata"  (
   "city_name" character(255) NOT NULL,
   "country" character(8) NOT NULL,
   "timezone" integer NOT NULL,
-  "date" timestamp NOT NULL
+  "date" timestamp UNIQUE NOT NULL
 )
