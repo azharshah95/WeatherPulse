@@ -21,7 +21,7 @@ This repository contains code for an Airflow DAG (Directed Acyclic Graph) named 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/azharshah95/WeatherPulse
+   git clone https://github.com/azharshah95/WeatherPulse.git
    ```
 2. Setup .env file:
 
