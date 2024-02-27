@@ -16,6 +16,13 @@ CREATE TABLE "tbldata" (
   "date" timestamp UNIQUE NOT NULL
 )
 ```
+
+## Linux commands
+- Finds and returns file/folder path
+  ```bash
+  find . -name <filename>
+  ```
+
 ## Docker commands
 ```bash
 docker-compose -f stack.yml up
