@@ -2,10 +2,15 @@ import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+import concurrent.futures
+import coordinates
 from os import getenv
 import requests
 from dotenv import load_dotenv
 load_dotenv()
+
+# initialize coordinates
+coordinatesValues = coordinates.points()
 
 try:
     API_KEY = getenv('API_KEY')
@@ -30,13 +35,6 @@ def dbConnect():
 
     except:
         print("Error occurred while connecting to Database")
-
-
-def fetchData(ti):
-    rawData = requests.get(
-        f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}&units={UNITS}").json()
-
-    ti.xcom_push(key='raw_data', value=rawData)
 
 
 def parsingRawData(ti):
@@ -86,6 +84,29 @@ def insertData(ti):
     #     if conn:
     #         # conn.close()
     #         print("PostgreSQL connection is closed")
+
+
+def getAPIData(LAT, LON, API_KEY, UNITS):
+    rawData = requests.get(
+        f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}&units={UNITS}").json()
+    return rawData
+
+
+def fetchData(ti):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        futures = []
+        for coord in coordinatesValues:
+            # 0 = LAT
+            # 1 = LON
+            futures.append(executor.submit(
+                getAPIData, coord[0], coord[1], API_KEY, UNITS
+            ))
+
+        # Wait for all tasks to complete
+        concurrent.futures.wait(futures)
+
+        for _ in concurrent.futures.as_completed(futures):
+            ti.xcom_push(key='raw_data', value=_.result())
 
 
 with DAG('hello_weather',
