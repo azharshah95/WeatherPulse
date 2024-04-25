@@ -14,6 +14,7 @@ load_dotenv()
 coordinatesValues = coordinates.points()
 
 try:
+    # read API key
     API_KEY = getenv('API_KEY')
     LAT = getenv('LAT')
     LON = getenv('LON')
@@ -30,6 +31,8 @@ except:
 
 
 def dbConnect():
+    """Connects to the database and returns the connection object."""
+
     try:
         pgHook = PostgresHook(postgres_conn_id='etl_weather_db')
         return pgHook
@@ -39,6 +42,8 @@ def dbConnect():
 
 
 def parsingRawData(ti, cityname):
+    """Parses raw data and pushes it to xcom."""
+
     rawData = ti.xcom_pull(key=f"raw_data_{cityname}")
     myDict = {
         "date": datetime.datetime.fromtimestamp(rawData["dt"]),
@@ -56,6 +61,8 @@ def parsingRawData(ti, cityname):
 
 
 def insertData(ti, cityname):
+    """Inserts data into the database."""
+
     try:
         parsedData = ti.xcom_pull(key=f"parsed_data_{cityname}")
         conn = dbConnect()
@@ -88,12 +95,14 @@ def insertData(ti, cityname):
 
 
 def getAPIData(LAT, LON):
+    """Fetches data from the API and returns it as a dictionary."""
     rawData = requests.get(
         f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}&units={UNITS}").json()
     return rawData
 
 
 def fetchData(ti, coords, cityname):
+    """Fetches data from the API and pushes it to xcom."""
 
     raw_data = getAPIData(coords[0], coords[1])
 
