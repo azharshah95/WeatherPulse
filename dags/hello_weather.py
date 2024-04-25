@@ -1,4 +1,5 @@
 import datetime
+import json
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
@@ -37,8 +38,8 @@ def dbConnect():
         print("Error occurred while connecting to Database")
 
 
-def parsingRawData(ti):
-    rawData = ti.xcom_pull(key='raw_data')
+def parsingRawData(ti, cityname):
+    rawData = ti.xcom_pull(key=f"raw_data_{cityname}")
     myDict = {
         "date": datetime.datetime.fromtimestamp(rawData["dt"]),
         "city_name": rawData["name"],
@@ -51,12 +52,12 @@ def parsingRawData(ti):
         "feels_like": rawData["main"]["feels_like"],
         "timezone": rawData["timezone"]
     }
-    ti.xcom_push(key='parsed_data', value=myDict)
+    ti.xcom_push(key=f"parsed_data_{cityname}", value=myDict)
 
 
-def insertData(ti):
+def insertData(ti, cityname):
     try:
-        parsedData = ti.xcom_pull(key='parsed_data')
+        parsedData = ti.xcom_pull(key=f"parsed_data_{cityname}")
         conn = dbConnect()
 
         city_id = parsedData["city_id"],
@@ -76,58 +77,69 @@ def insertData(ti):
         conn.run(sql=SQL, parameters=row)
 
     except (Exception) as error:
-        ti.xcom_push(key='insert_error', value=error)
+        ti.xcom_push(key=f"insert_error_{cityname}", value=json.dumps(error))
         print("Failed to insert record into tbldata", error)
 
     # finally:
     #     # closing database connection.
     #     if conn:
-    #         # conn.close()
+    #         conn.close()
     #         print("PostgreSQL connection is closed")
 
 
-def getAPIData(LAT, LON, API_KEY, UNITS):
+def getAPIData(LAT, LON):
     rawData = requests.get(
         f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}&units={UNITS}").json()
     return rawData
 
 
-def fetchData(ti):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        futures = []
-        for coord in coordinatesValues:
-            # 0 = LAT
-            # 1 = LON
-            futures.append(executor.submit(
-                getAPIData, coord[0], coord[1], API_KEY, UNITS
-            ))
+def fetchData(ti, coords, cityname):
 
-        # Wait for all tasks to complete
-        concurrent.futures.wait(futures)
+    raw_data = getAPIData(coords[0], coords[1])
 
-        for _ in concurrent.futures.as_completed(futures):
-            ti.xcom_push(key='raw_data', value=_.result())
+    ti.xcom_push(key=f"raw_data_{cityname}", value=raw_data)
 
 
 with DAG('hello_weather',
          description='Hello World DAG',
-         schedule='*/10 * * * *',
-         start_date=datetime.datetime(2017, 3, 20),
+         schedule_interval='*/15 * * * *',
+         start_date=datetime.datetime(2024, 4, 25),
          catchup=False):
 
-    downloading_data = PythonOperator(
-        task_id='weather_task',
-        python_callable=fetchData
-    )
+    # run in loop
+    for city in coordinatesValues:
+        cityname = city['cityname'].lower()
 
-    transform_data = PythonOperator(
-        task_id='weather_parsing_task',
-        python_callable=parsingRawData
-    )
+        downloading_data = PythonOperator(
+            task_id='weather_task' + cityname,
+            provide_context=True,
+            python_callable=fetchData,
+            op_kwargs={
+                "cityname": cityname,
+                "coords": (
+                    city["latitude"], city["longitude"]
+                )
+            }
+        )
 
-    load_data = PythonOperator(
-        task_id='weather_load_task',
-        python_callable=insertData
-    )
+        # run after loop
+        transform_data = PythonOperator(
+            task_id='weather_parsing_task_' + cityname,
+            provide_context=True,
+            python_callable=parsingRawData,
+            op_kwargs={
+                "cityname": cityname
+            }
+        )
 
-    downloading_data >> transform_data >> load_data
+        # run in last
+        load_data = PythonOperator(
+            task_id='weather_load_task_' + cityname,
+            provide_context=True,
+            python_callable=insertData,
+            op_kwargs={
+                "cityname": cityname
+            }
+        )
+
+        downloading_data >> transform_data >> load_data

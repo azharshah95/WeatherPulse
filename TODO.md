@@ -1,5 +1,6 @@
 ### Further TODOs
 - [x] automate daily CSV export
+- [ ] look into SubDag 
 - [ ] implement sub-tasks dag
 - [ ] automate daily CSV export - using Airflow BashOperator
 - [ ] Logging using Grafana or Prometheus
