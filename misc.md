@@ -1,27 +1,14 @@
 # Misc sheet
 
 ## Creating Postgres Table SQL
-```sql
-CREATE TABLE "tbldata" (
-  "id" serial NOT NULL,
-  PRIMARY KEY ("id"),
-  "city_id" integer NOT NULL,
-  "lon" real NOT NULL,
-  "lat" real NOT NULL,
-  "temp" real NOT NULL,
-  "feels_like" real NOT NULL,
-  "city_name" character(255) NOT NULL,
-  "country" character(8) NOT NULL,
-  "timezone" integer NOT NULL,
-  "date" timestamp UNIQUE NOT NULL
-)
-```
+Please check the [db.sql](db.sql) file.
 
 ## Linux commands
-- Finds and returns file/folder path
-  ```bash
-  find . -name <filename>
-  ```
+1. Finds and returns file/folder path
+
+    ```bash
+    find . -name <filename>
+    ```
 
 ## Docker commands
 ```bash
