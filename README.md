@@ -27,7 +27,12 @@ This repository contains code for an Airflow DAG (Directed Acyclic Graph) named 
 
    Please check the [misc.md](misc.md) file.
 
-3. Run Docker Containers:
+3. Python Packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Run Docker Containers:
 
    To run `stack.yml`
    ```bash
